@@ -193,6 +193,7 @@ makeInitCellTypePCAPlots( seuratAll, nComps = 5, plotDPI = plotDPI, name = "All_
 source("R/findBestUmapClusters.r")
 Spread		<- 10
 
+#TO RUN CLUSTER OPTIMIZATION PLEASE UNCOMMENT THIS AND COMMENT LOAD BELOW
 #bestUmap 	<- findBestUmapClusters( seuratWT, Spread)
 #save( bestUmap, file = file.path( clusterDataDir, "bestUmap_regular_renamed.rObj"))
 
@@ -227,7 +228,9 @@ plotClusterTree( bestUmap, plotDPI = plotDPI, treeName = "coarseGrainClusterTree
 makeDotPlot( bestUmap, balanced = TRUE, nLines = length( levels( bestUmap@ident)), plotDPI = plotDPI, orientation = "landscape", name = "coarseGrainDotPlot")
 bestUmap <- StashIdent( bestUmap, save.name = "bestClustersIdent")
 
-#source("R/make2Dmap.r")
+
+source("R/make2Dmap.r")
+#*********** TO COMPUTE VISUALIZATION please uncomment this and comment 'load' below
 #umap2Dinit <- make2Dmap( seuratWT)
 #save( file = file.path( clusterDataDir, "visualisation2Dumap_renamed.rObj"), umap2Dinit)
 
@@ -267,6 +270,8 @@ valUmap 	<- StashIdent( valUmap, save.name = valCutoffIdentName)
 makeInitCellTypePCAPlots( valUmap, nComps = 5, plotDPI = plotDPI, name = "clusterPCAPlot")
 
 #Plot special dotPlots for control cell types
+
+valUmap@ident	<- ordered( valUmap@ident, levels = c( "eHMP", "ltHMP", "I", "M", "X", "7", "4"))
 makeDotPlot( valUmap, balanced = TRUE, nLines = length( levels( valUmap@ident)), plotDPI = plotDPI, orientation = "landscape", name = "valClusterDotPlot")
 
 #make Cluster HeatMap
@@ -547,6 +552,9 @@ makeVlnPlots( valUmap, plotDPI = plotDPI)
 #Now consider mutant cells
 seuratMut 	<- SubsetData( seuratAll, ident.use = "sox10-")
 seuratMut@project.name <- "sox10_mutants"
+
+makeDotPlot( seuratMut, balanced = TRUE, nLines = length( levels( seuratMut@ident))+3, plotDPI = plotDPI, orientation = "landscape", name = "mutOnlyDotPlot")
+
 
 #Heatmap of mutant cells with ltk ordering
 source("R/drawGeneSortHeatMap.r")
