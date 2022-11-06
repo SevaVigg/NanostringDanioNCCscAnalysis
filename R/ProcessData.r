@@ -256,12 +256,14 @@ for (i in seq(0.76, valCutoff, 0.01)){ cat(i, "\n")
    valUmap <- ValidateClusters( valUmap, pc.use = 1:8, top.genes = 4, min.connectivity = 0.005, acc.cutoff = i)
 }
 
-valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = TRUE, do.plot = TRUE)
+valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = TRUE, do.plot = FALSE)
 levels(valUmap@ident) <- names( getFinalClusterTypes( valUmap))
-valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = FALSE, do.plot = TRUE)
+valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = FALSE, do.plot = FALSE)
 
 png( file.path( clusterTreeDir, "validatedClusterTree.png"))
-	PlotClusterTree( valUmap) 
+	plotClusterTree( valUmap, plotDPI = plotDPI, treeName = "validatedClusterTree")
+
+ 
 dev.off()
 
 valUmap 	<- StashIdent( valUmap, save.name = valCutoffIdentName)
