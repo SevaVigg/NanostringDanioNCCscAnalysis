@@ -50,6 +50,8 @@ To optimize for visualization perspective please go to the script ProcessData.r 
 and comment reading of the saved 2D umap map (line 238). Visulization runs quickly, but about 80% of maps have strange layout of clusters with
 ltHMPs outlying above eHMPs, and trajectories starting from eHMP and bypassing back eHMP cluster ih hiD, which is visually misleading (recall that trajectories are calculated in 42D probe count space).
 
+Published single cell data integration was conducted on the server with 128 cores (Intel Core I5 processors) and 512 Gb of RAM running 18.04.1-Ubuntu Linux 5.4.0-122-generic kernel. Batch correction and data integration scripts was developed on R 4.1.1 version using batchelor 1.14.0 package
+
 The data are distributed under  CC BY licence, the software under MIT licence.
 
 
