@@ -1,10 +1,10 @@
 # This is the entry point to the NCC data analysis
 #
-# tested with R version 3.5.2 ; Seurat version 2.3.4  ; Slingshot version 1.0.0
+# tested with R version 3.6.3 ; Seurat version 2.3.4  ; Slingshot version 1.0.0
 #
 #The main process of treatment NCC nanostring data; execute all other scripts and makes all plots
 #
-# Finished by Vsevolod J. Makeev 15.05.2021, developed 2017 - 2021 
+# last updated by Vsevolod J. Makeev 08.01.2023, developed 2017 - 2022 
 
 
 require( tidyr )
@@ -14,7 +14,8 @@ require( ComplexHeatmap)
 source("R/ReadSourceFiles.r")
 source("R/writeDupFile.r")
 
-plotDPI		<- 600
+#select the output. 300 for 300dpi, 600 for 600dpi, pdf for pdf vector
+plotDPI		<- 'pdf'
 
 #in the introduction we make the directory structure
 workDir <- getwd()
@@ -54,53 +55,55 @@ dir.create( vlnPlotDir, showWarnings = FALSE)
 #end of the introduction
 
 
-#Read and process files
-CellTable 	<- ReadSourceFiles(rawPath)
+#Read and process files. This part prepares ScTables by quality control and imputation. If commented, it goes to Seurat analysis. Remove one # to 
+#run the complete process
 
-write.table(CellTable$Genes, file = file.path(initialTablesPath, "CellTableUnDup_ET.csv"), sep = "\t")
-write.table(CellTable$Cells, file = file.path(initialTablesPath, "CellTableUnDup_CD.csv"), sep = "\t")
-
-#Find duplicates
-
-dupTable  	<- findDuplicated(CellTable)						#Save duplicated entries
-writeDupFile(CellTable, dupTable, initialTablesPath)						#my function
-
-			
-CellTable$Genes 	<- CellTable$Genes[-dupTable[2,]]
-CellTable$Cells 	<- CellTable$Cells[-dupTable[2,]]
-
-genesMissing_I <- which(!complete.cases(CellTable$Genes))
-write.table( CellTable$Probes[genesMissing_I,], file = file.path( initialTablesPath, "missingGenes.csv") )
-
-cellsWMissingGenes_I <- unlist( lapply(genesMissing_I, function(gene_I) {cell_I <- which(is.na(CellTable$Genes[gene_I,]))
-				geneFileName <- file.path( initialTablesPath, paste0("Missing_", CellTable$Probes[gene_I, "Gene.Name"], "_cells.csv"))
-				write.table( CellTable$Cells[,cell_I], file = geneFileName )
-					return( cell_I)}))
-#remove cells with missing genes
-
-CellTable$Genes	<- CellTable$Genes[-cellsWMissingGenes_I]
-CellTable$Cells <- CellTable$Cells[-cellsWMissingGenes_I]
-
-cellNames	<- paste0(CellTable$Cells["CellType", ], "_", "C", 1:ncol(CellTable$Genes), "_",  CellTable$Cells["hpf", ])
-rownames( CellTable$Genes) <- make.names( rownames(CellTable$Genes))
-colnames( CellTable$Genes) <- cellNames
-rownames( CellTable$Cells) <- make.names( rownames(CellTable$Cells))
-colnames( CellTable$Cells) <- cellNames
-CellTable$Probes$Gene.Name <- make.names( CellTable$Probes$Gene.Name)
-
-
-#Write deduplicated results
-
-write.csv( CellTable$Genes,  file = file.path( initialTablesPath, "expressionTableDedup.csv"   ) )
-write.csv( CellTable$Cells,  file = file.path( initialTablesPath, "cellDescripitonsDedup.csv"  ) )
-write.csv( CellTable$Probes, file = file.path( initialTablesPath, "ProbesDescripitonsDedup.csv") )
-
-#qualityControl 
-source("R/qualityControl600dpi.r")
-
-#imputation
-source("R/makeScTables.r")
-
+#CellTable 	<- ReadSourceFiles(rawPath)
+#
+#write.table(CellTable$Genes, file = file.path(initialTablesPath, "CellTableUnDup_ET.csv"), sep = "\t")
+#write.table(CellTable$Cells, file = file.path(initialTablesPath, "CellTableUnDup_CD.csv"), sep = "\t")
+#
+##Find duplicates
+#
+#dupTable  	<- findDuplicated(CellTable)						#Save duplicated entries
+#writeDupFile(CellTable, dupTable, initialTablesPath)						#my function
+#
+#			
+#CellTable$Genes 	<- CellTable$Genes[-dupTable[2,]]
+#CellTable$Cells 	<- CellTable$Cells[-dupTable[2,]]
+#
+#genesMissing_I <- which(!complete.cases(CellTable$Genes))
+#write.table( CellTable$Probes[genesMissing_I,], file = file.path( initialTablesPath, "missingGenes.csv") )
+#
+#cellsWMissingGenes_I <- unlist( lapply(genesMissing_I, function(gene_I) {cell_I <- which(is.na(CellTable$Genes[gene_I,]))
+#				geneFileName <- file.path( initialTablesPath, paste0("Missing_", CellTable$Probes[gene_I, "Gene.Name"], "_cells.csv"))
+#				write.table( CellTable$Cells[,cell_I], file = geneFileName )
+#					return( cell_I)}))
+##remove cells with missing genes
+#
+#CellTable$Genes	<- CellTable$Genes[-cellsWMissingGenes_I]
+#CellTable$Cells <- CellTable$Cells[-cellsWMissingGenes_I]
+#
+#cellNames	<- paste0(CellTable$Cells["CellType", ], "_", "C", 1:ncol(CellTable$Genes), "_",  CellTable$Cells["hpf", ])
+#rownames( CellTable$Genes) <- make.names( rownames(CellTable$Genes))
+#colnames( CellTable$Genes) <- cellNames
+#rownames( CellTable$Cells) <- make.names( rownames(CellTable$Cells))
+#colnames( CellTable$Cells) <- cellNames
+#CellTable$Probes$Gene.Name <- make.names( CellTable$Probes$Gene.Name)
+#
+#
+##Write deduplicated results
+#
+#write.csv( CellTable$Genes,  file = file.path( initialTablesPath, "expressionTableDedup.csv"   ) )
+#write.csv( CellTable$Cells,  file = file.path( initialTablesPath, "cellDescripitonsDedup.csv"  ) )
+#write.csv( CellTable$Probes, file = file.path( initialTablesPath, "ProbesDescripitonsDedup.csv") )
+#
+##qualityControl 
+#source("R/qualityControl600dpi.r")
+#
+##imputation
+#source("R/makeScTables.r")
+#
 #start Seurat analysis
 
 source("R/seuratNorm.r")
@@ -120,12 +123,16 @@ dir.create( heatMapDir100dpi, showWarnings = FALSE)
 heatMapDir600dpi	<- file.path( heatMapDir, "600dpi")
 dir.create( heatMapDir600dpi, showWarnings = FALSE)
 
+heatMapDirPdf		<- file.path( heatMapDir, "pdf")
+dir.create( heatMapDirPdf, showWarning = FALSE)
+
 #gene covariance
 source( "R/drawGeneCovarHeatMap.r")
 
-heatMapHeight 	<- 10
-heatMapWidth 	<- 10
-Margin		<- 2
+Margin 		<- 1
+heatMapHeight 	<- 8.4 - 2*Margin
+heatMapWidth 	<- 8.4 - 2*Margin
+
 
 if (plotDPI == 600) {
 png( file = file.path( heatMapDir600dpi, "geneCovarHeatMap.png"),
@@ -149,12 +156,22 @@ png( file = file.path( heatMapDir100dpi, "geneCovarHeatMap.png"),
 	draw( drawGeneCovarHeatMap( seuratWT, heatMapHeight, heatMapWidth))
 dev.off()}
 
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "geneCovarHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width  = heatMapWidth + Margin,
+	paper  = 'a4'
+)
+	draw(  drawGeneCovarHeatMap( seuratWT, heatMapHeight, heatMapWidth)) 
+dev.off()}
+
 #gene biclusters
 source( "R/drawBiclustHeatMap.r")
 
-heatMapHeight 	<- 7
-heatMapWidth 	<- 10
-Margin		<- 2
+Margin		<- 1
+heatMapHeight 	<- 8.4 - 2*Margin
+heatMapWidth 	<- 11.7 - 2*Margin
+
 
 if (plotDPI == 600) {
 png( file = file.path( heatMapDir600dpi, "biclustWTHeatMap.png"),
@@ -178,6 +195,17 @@ png( file = file.path( heatMapDir100dpi, "biclustWTHeatMap.png"),
 	draw( drawBiclustHeatMap( seuratWT, heatMapHeight, heatMapWidth))
 dev.off()}
 
+
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "biclustWTHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width  = heatMapWidth + Margin,
+	paper  = 'a4r'
+)
+	draw(  drawBiclustHeatMap( seuratWT, heatMapHeight - Margin, heatMapWidth - Margin)) 
+dev.off()}
+
+
 source("R/makeDotPlot.r")
 
 nClust = length( levels( seuratWT@ident))
@@ -193,7 +221,6 @@ makeInitCellTypePCAPlots( seuratAll, nComps = 5, plotDPI = plotDPI, name = "All_
 source("R/findBestUmapClusters.r")
 Spread		<- 10
 
-#TO RUN CLUSTER OPTIMIZATION PLEASE UNCOMMENT THIS AND COMMENT LOAD BELOW
 #bestUmap 	<- findBestUmapClusters( seuratWT, Spread)
 #save( bestUmap, file = file.path( clusterDataDir, "bestUmap_regular_renamed.rObj"))
 
@@ -222,15 +249,16 @@ dir.create( clusterTreeDir100dpi, showWarnings = FALSE)
 clusterTreeDir600dpi	<- file.path( clusterTreeDir, "600dpi")
 dir.create( clusterTreeDir600dpi, showWarnings = FALSE)
 
+clusterTreeDirPdf	<- file.path( clusterTreeDir, "pdf")
+dir.create( clusterTreeDirPdf, showWarnings = FALSE)
+
 source("R/plotClusterTree.r")
 plotClusterTree( bestUmap, plotDPI = plotDPI, treeName = "coarseGrainClusterTree")
 
 makeDotPlot( bestUmap, balanced = TRUE, nLines = length( levels( bestUmap@ident)), plotDPI = plotDPI, orientation = "landscape", name = "coarseGrainDotPlot")
 bestUmap <- StashIdent( bestUmap, save.name = "bestClustersIdent")
 
-
-source("R/make2Dmap.r")
-#*********** TO COMPUTE VISUALIZATION please uncomment this and comment 'load' below
+#source("R/make2Dmap.r")
 #umap2Dinit <- make2Dmap( seuratWT)
 #save( file = file.path( clusterDataDir, "visualisation2Dumap_renamed.rObj"), umap2Dinit)
 
@@ -247,7 +275,7 @@ makeDimPlot( umapCondRes$All, dimRed = "umap", name = "initCellPlotMut", orienta
 
 
 #now validate clusters
-valCutoff 		<- 0.92
+valCutoff 		<- 0.93
 valCutoffIdentName	<- paste0( "cutoffIdent", valCutoff)
 
 valUmap <- ValidateClusters( bestUmap, pc.use = 1:8, top.genes = 4, min.connectivity = 0.005, acc.cutoff = 0.75)
@@ -256,14 +284,12 @@ for (i in seq(0.76, valCutoff, 0.01)){ cat(i, "\n")
    valUmap <- ValidateClusters( valUmap, pc.use = 1:8, top.genes = 4, min.connectivity = 0.005, acc.cutoff = i)
 }
 
-valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = TRUE, do.plot = FALSE)
+valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = TRUE, do.plot = TRUE)
 levels(valUmap@ident) <- names( getFinalClusterTypes( valUmap))
-valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = FALSE, do.plot = FALSE)
+valUmap <- BuildClusterTree( valUmap, pcs.use = 1:8, do.reorder = TRUE, reorder.numeric = FALSE, do.plot = TRUE)
 
-png( file.path( clusterTreeDir, "validatedClusterTree.png"))
-	plotClusterTree( valUmap, plotDPI = plotDPI, treeName = "validatedClusterTree")
-
- 
+pdf( file.path( clusterTreeDir, "validatedClusterTree.pdf"))
+	PlotClusterTree( valUmap) 
 dev.off()
 
 valUmap 	<- StashIdent( valUmap, save.name = valCutoffIdentName)
@@ -272,8 +298,6 @@ valUmap 	<- StashIdent( valUmap, save.name = valCutoffIdentName)
 makeInitCellTypePCAPlots( valUmap, nComps = 5, plotDPI = plotDPI, name = "clusterPCAPlot")
 
 #Plot special dotPlots for control cell types
-
-valUmap@ident	<- ordered( valUmap@ident, levels = c( "eHMP", "ltHMP", "I", "M", "X", "7", "4"))
 makeDotPlot( valUmap, balanced = TRUE, nLines = length( levels( valUmap@ident)), plotDPI = plotDPI, orientation = "landscape", name = "valClusterDotPlot")
 
 #make Cluster HeatMap
@@ -300,6 +324,18 @@ png( file = file.path( heatMapDir100dpi, "clusterHeatMap.png"),
 )
 	draw( drawClusterHeatMap( valUmap, heatMapHeight, heatMapWidth))
 dev.off()}
+
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "clusterHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width  = heatMapWidth + Margin,
+	paper  = 'a4r'
+)
+	draw(  drawClusterHeatMap( valUmap, heatMapHeight - Margin, heatMapWidth - 2*Margin)) 
+dev.off()}
+
+
+
 
 umap2Dclust <- umap2Dinit
 umap2Dclust@meta.data[, valCutoffIdentName] 	<- valUmap@meta.data[, valCutoffIdentName]
@@ -387,6 +423,16 @@ png( file = file.path( heatMapDir100dpi, "cntrMeloHeatMap.png"),
 	draw( drawBiclustHeatMap( seuratM, heatMapHeight, heatMapWidth, showCellNames = TRUE))
 dev.off()}
 
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "cntrMeloHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	draw( drawBiclustHeatMap( seuratM, heatMapHeight - Margin, heatMapWidth - Margin, showCellNames = TRUE))
+dev.off()}
+
+
 
 #For iridophores. 
 #Plot special dotPlots for iridophores cell types
@@ -446,6 +492,15 @@ png( file = file.path( heatMapDir100dpi, "cntrIridoHeatMap.png"),
 	draw( drawBiclustHeatMap( seuratI, heatMapHeight, heatMapWidth, showCellNames = TRUE))
 dev.off()}
 
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "cntrIridoHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	draw( drawBiclustHeatMap( seuratI, heatMapHeight - Margin, heatMapWidth - Margin, showCellNames = TRUE))
+dev.off()}
+
 # Now we plot pseudotime heatmaps
 
 source("R/getTargetCurve.r")
@@ -473,6 +528,18 @@ png( file = file.path( heatMapDir100dpi, "iridoPseudoCellsHeatMap.png"),
 	draw( drawTargetHeatMapCells( valUmap, getTargetCurve( slingUmapObjs, target = "I"), heatMapHeight = heatMapHeight, heatMapWidth = heatMapWidth, reorderClusters = TRUE))
 dev.off()}
 
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "iridoPseudoCellsHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	
+	draw( drawTargetHeatMapCells( valUmap, getTargetCurve( slingUmapObjs, target = "I"), heatMapHeight = heatMapHeight - Margin, heatMapWidth = heatMapWidth - 2*Margin, reorderClusters = TRUE))
+dev.off()}
+
+
+
 #and now melanocytes
 if (plotDPI == 600) {
 png( file = file.path( heatMapDir600dpi, "melanoPseudoCellsHeatMap.png"),
@@ -495,6 +562,18 @@ png( file = file.path( heatMapDir100dpi, "melanoPseudoCellsHeatMap.png"),
 )
 	draw( drawTargetHeatMapCells( valUmap, getTargetCurve( slingUmapObjs, target = "M"), heatMapHeight = heatMapHeight, heatMapWidth = heatMapWidth, reorderClusters = TRUE))
 dev.off()}
+
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "melanoPseudoCellsHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	
+	draw( drawTargetHeatMapCells( valUmap, getTargetCurve( slingUmapObjs, target = "M"), heatMapHeight = heatMapHeight - Margin, heatMapWidth = heatMapWidth - 2*Margin, reorderClusters = TRUE))
+dev.off()}
+
+
 
 #and for smoothed values, first iridophores
 source("R/drawTargetHeatMapCurve.r")
@@ -521,6 +600,19 @@ png( file = file.path( heatMapDir100dpi, "iridoTargetHeatMapSmooth.png"),
 	draw( drawTargetHeatMapCurve( valUmap,  getTargetCurve( slingUmapObjs, target = "I"), heatMapHeight, heatMapWidth))
 dev.off()}
 
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "iridoTargetHeatMapSmooth.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	
+	draw( drawTargetHeatMapCurve( valUmap, getTargetCurve( slingUmapObjs, target = "I"), heatMapHeight = heatMapHeight - Margin, heatMapWidth = heatMapWidth - 2*Margin))
+dev.off()}
+
+
+
+
 #and melanocytes
 
 if (plotDPI == 600) {
@@ -545,6 +637,17 @@ png( file = file.path( heatMapDir100dpi, "melanoTargetHeatMapSmooth.png"),
 	draw( drawTargetHeatMapCurve( valUmap,  getTargetCurve( slingUmapObjs, target = "M"), heatMapHeight, heatMapWidth))
 dev.off()}
 
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "melanoTargetHeatMapSmooth.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	
+	draw( drawTargetHeatMapCurve( valUmap, getTargetCurve( slingUmapObjs, target = "M"), heatMapHeight = heatMapHeight - Margin, heatMapWidth = heatMapWidth - 2*Margin))
+dev.off()}
+
+
 
 #vlnPlots
 source("R/makeVlnPlots.r")
@@ -554,9 +657,6 @@ makeVlnPlots( valUmap, plotDPI = plotDPI)
 #Now consider mutant cells
 seuratMut 	<- SubsetData( seuratAll, ident.use = "sox10-")
 seuratMut@project.name <- "sox10_mutants"
-
-makeDotPlot( seuratMut, balanced = TRUE, nLines = length( levels( seuratMut@ident))+3, plotDPI = plotDPI, orientation = "landscape", name = "mutOnlyDotPlot")
-
 
 #Heatmap of mutant cells with ltk ordering
 source("R/drawGeneSortHeatMap.r")
@@ -584,6 +684,16 @@ png( file = file.path( heatMapDir100dpi, "ltkSortedmutantHeatMap.png"),
 )
 	draw( drawGeneSortHeatMap( seuratMut,  heatMapHeight, heatMapWidth, showCellNames = FALSE))
 dev.off()}
+
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "ltkSortedmutantHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	draw( drawGeneSortHeatMap( seuratMut,  heatMapHeight - Margin, heatMapWidth - 2*Margin, showCellNames = FALSE))
+dev.off()}
+
 
 	
 
@@ -635,6 +745,16 @@ png( file = file.path( heatMapDir100dpi, "clusterMutHeatMap.png"),
 )
 	draw( drawClusterHeatMap( seuratMut, heatMapHeight, heatMapWidth))
 dev.off()}
+
+if (plotDPI == 'pdf') {
+pdf( file = file.path( heatMapDirPdf, "clusterMutHeatMap.pdf"),
+	height = heatMapHeight + Margin,
+	width =  heatMapWidth + Margin,
+	paper = 'a4r'
+)
+	draw( drawClusterHeatMap( seuratMut, heatMapHeight - Margin, heatMapWidth - 3*Margin))
+dev.off()}
+
 
 seuratCombined			<- MergeSeurat( bestUmap, seuratMut, do.normalize = FALSE, do.scale = TRUE, names.field = NULL)
 seuratCombined 			<- RunPCA( seuratCombined, pc.genes = rownames( seuratCombined@data))

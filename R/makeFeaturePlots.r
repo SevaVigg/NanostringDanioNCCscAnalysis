@@ -75,7 +75,7 @@ if( seuratObj@project.name == "taqman"){
 										axis.title  = element_text( size = 8),
 										axis.text.x = element_text(
 											angle = 90,
-											hjust = 0.1,
+											hjust = 0.9,
 											vjust = 0.1,
 											size =	6), 
 										axis.text.y  = element_text( size = 6),
@@ -102,6 +102,12 @@ if( plotDPI == 600){
   dir.create( featurePlotDir100dpi, showWarnings = FALSE)
 
   ggsave( paste0( name, ".png"), path = featurePlotDir100dpi, device = "png" , plot = featurePlot, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
+}else if( plotDPI == 'pdf'){
+
+  featurePlotDirPdf <- file.path( featurePlotDir, "pdf")
+  dir.create( featurePlotDirPdf, showWarnings = FALSE)
+
+  ggsave( paste0( name, ".pdf"), path = featurePlotDirPdf, device = "pdf" , plot = featurePlot, width = pageWidth, height = pageHeight, units = "cm", scale = 4)
 
 }else{ cat("Select plotDPI 600 or plotDPI 100")}
 

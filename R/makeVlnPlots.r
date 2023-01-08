@@ -39,7 +39,7 @@ vlnPlot <- VlnPlot( seuratObj, c( 	"tfap2e"	, "tfap2a"	, "her9"	, "sox9b"	, "fox
 					"myo5aa"	, "pnp4a"	, "ets1"	, "fgfr3"	, "pax3a"	, 
 					"dpf3"		, "smad9"),
 
-	nCol = 5,  cols.use = setClusterColors(seuratObj), do.return = TRUE)
+	nCol = 6,  cols.use = setClusterColors(seuratObj), do.return = TRUE)
 }
 
 if( plotDPI == 600){
@@ -55,6 +55,13 @@ if( plotDPI == 600){
   dir.create( vlnPlotDir100dpi, showWarnings = FALSE)
 
   ggsave( paste0( name, ".png"), path = vlnPlotDir100dpi, device = "png" , plot = vlnPlot, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
+
+}else if( plotDPI == 'pdf' ){
+
+  vlnPlotDirPdf <- file.path( vlnPlotDir, "pdf")
+  dir.create( vlnPlotDirPdf, showWarnings = FALSE)
+
+  ggsave( paste0( name, ".pdf"), path = vlnPlotDirPdf, device = "pdf" , plot = vlnPlot, width = pageWidth, height = pageHeight, units = "cm", scale = 4)
 
 }else{ cat("Select plotDPI 600 or plotDPI 100")}
 

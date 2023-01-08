@@ -46,6 +46,13 @@ if( plotDPI == 600){
   dir.create( dotPlotDir100dpi, showWarnings = FALSE)
 
   ggsave( paste0( name, ".png"), path = dotPlotDir100dpi, device = "png" , plot = WTdotPlot, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
+}else if( plotDPI == 'pdf'){
+
+  dotPlotDirPdf <- file.path( dotPlotDir, "pdf")
+  dir.create( dotPlotDirPdf, showWarnings = FALSE)
+
+  ggsave( paste0( name, ".pdf"), path = dotPlotDirPdf, device = "pdf" , plot = WTdotPlot, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
+
 
 }else{ cat("Select plotDPI 600 or plotDPI 100")}
 

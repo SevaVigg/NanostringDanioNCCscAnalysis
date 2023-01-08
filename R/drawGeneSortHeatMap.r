@@ -33,27 +33,28 @@ dataMatrix 	<- seuratObj@data[ geneOrder , order( seuratObj@data[ "ltk", ],  dec
 
 colPanelFun	 = colorRamp2( quantile( dataMatrix, seq(0, 1, by = 1/(nCol - 1))), viridis( nCol))
 
-
+row_dend 		<- dendsort(hclust( dist(dataMatrix, method = "cosine", pairwise = TRUE)))
 
 hMap		<- Heatmap( 	dataMatrix, 
 			name 	= "gene expression",
 			width 	= unit( heatMapWidth,  "inches"), 
 			height 	= unit( heatMapHeight, "inches"),
 			heatmap_legend_param = list(
-				title = "gene exp",
+				title = "log10(Exp)",
 				legend_height = unit( 2, "inches"),
-				grid_width = unit( 0.5, "inches"),
-				title_gp = gpar( fontsize = 16, fontface = "bold")		
+				grid_width = unit( 0.2, "inches"),
+				title_gp = gpar( fontsize = 12, fontface = "plain")		
 						),
 			col	=  colPanelFun,
 			cluster_columns = FALSE,
-			cluster_rows = FALSE,
-			row_dend_reorder = FALSE,
+			cluster_rows = TRUE,
+			row_dend_reorder = TRUE,
 			show_column_names = showCellNames, 
-			row_names_gp = gpar(fontsize = 12), 
-			column_names_gp = gpar(fontsize = 12),
-#			clustering_distance_rows = function(x) dist( x, method = "cosine", pairwise = TRUE), 
-			use_raster = TRUE, raster_device = "png"
+			row_names_gp = gpar(fontsize = 10), 
+			column_names_gp = gpar(fontsize = 10),
+			clustering_distance_rows = function(x) dist( x, method = "cosine", pairwise = TRUE), 
+			use_raster = FALSE
+#			 raster_device = "png"
 			)
 
 

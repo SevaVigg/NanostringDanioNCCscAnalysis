@@ -87,6 +87,15 @@ if( plotDPI == 600){
 
   ggsave( paste0( name, ".png"), path = PCAPlotDir100dpi, device = "png" , plot = PCAplots, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
 
+}else if( plotDPI == 'pdf'){
+
+  PCAPlotDirPdf <- file.path( PCAPlotDir, "pdf")
+  dir.create( PCAPlotDirPdf, showWarnings = FALSE)
+
+  ggsave( paste0( name, ".pdf"), path = PCAPlotDirPdf, device = "pdf" , plot = PCAplots, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
+
+
+
 }else{ cat("Select plotDPI 600 or plotDPI 100")}
 
 } #makeInitCellTypePCAPlots

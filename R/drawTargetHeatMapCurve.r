@@ -53,10 +53,10 @@ hMap <- Heatmap( 	t(targetCurve$curve),
 			width 	= unit( heatMapWidth,  "inches"), 
 			height 	= unit( heatMapHeight, "inches"),
 			heatmap_legend_param = list(
-				title = "gene exp",
+				title = "log10(Exp)",
 				legend_height = unit( 2, "inches"),
-				grid_width = unit( 0.5, "inches"),
-				title_gp = gpar( fontsize = 16, fontface = "bold")		
+				grid_width = unit( 0.2, "inches"),
+				title_gp = gpar( fontsize = 12, fontface = "plain")		
 						),
 			col	=  colPanelFun,
 			cluster_columns = FALSE,
@@ -68,7 +68,8 @@ hMap <- Heatmap( 	t(targetCurve$curve),
 			bottom_annotation = annotbar,
 			column_title = paste0("Expression of ", lineageType, " lineage"), 
 			clustering_distance_rows = function(x) dist( x, method = "cosine", pairwise = TRUE) , 
-			use_raster = TRUE, raster_device = "png", 
+			use_raster = FALSE
+#			raster_device = "png" 
 			)
 
 return( hMap)

@@ -59,6 +59,13 @@ if( plotDPI == 600){
 
   ggsave( paste0( name, ".png"), path = clusterPlotDir100dpi, device = "png" , plot = dimPlot, width = pageWidth, height = pageHeight, units = "cm", dpi = 100, scale = 4)
 
+}else if( plotDPI == 'pdf'){
+
+  clusterPlotDirPdf <- file.path( clusterPlotDir, "pdf")
+  dir.create( clusterPlotDirPdf, showWarnings = FALSE)
+
+  ggsave( paste0( name, ".pdf"), path = clusterPlotDirPdf, device = "pdf" , plot = dimPlot, width = pageWidth, height = pageHeight, units = "cm", scale = 4)
+
 }else{ cat("Select plotDPI 600 or plotDPI 100")}
 
 

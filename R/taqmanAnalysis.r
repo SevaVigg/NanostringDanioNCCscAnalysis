@@ -6,9 +6,9 @@ require( ComplexHeatmap)
 # performs normalization, quality filtering of TaqMan assay cells.
 # also builds heatmaps for all cells and for ltk positive cells only
 #
-# written by Seva Makeev, 2017 - 2021
+# written by Seva Makeev, 2017 - 2022
 
-plotDPI <- 600
+plotDPI <- 'pdf'
 
 workDir <- getwd()
 
@@ -36,10 +36,14 @@ dir.create( taqmanPlotDir100dpi, showWarnings = FALSE)
 taqmanPlotDir600dpi	<- file.path( taqmanPlotDir, "600dpi")
 dir.create( taqmanPlotDir600dpi, showWarnings = FALSE)
 
+taqmanPlotDirPdf	<- file.path( taqmanPlotDir, "pdf")
+dir.create( taqmanPlotDirPdf, showWarnings = FALSE)
 
-plotHeight 	<- 10
-plotWidth 	<- 10
-Margin		<- 2
+
+
+plotHeight 	<- 8.4
+plotWidth 	<- 11.7
+Margin		<- 1
 
 source("R/correctGeneNames.r")
 
@@ -54,7 +58,7 @@ taqmanData		<- rename( taqmanData, Kan = 'Kan ')
 
 taqmanData 		<- mutate_at(taqmanData, setdiff( colnames( taqmanData), "Sample"), .funs = list( ~(40 - . )*log10(2)))
 taqmanData		<- filter( taqmanData, Kan > quantile( apply(taqmanData[ , c("Kan")], 1, sum), 0.05))# re			
-taqmanData_Norm		<- mutate_at(taqmanData, .vars = vars(taqmanGenes), .funs = list( ~ .-Kan)) #we work in the log domain
+taqmanData_Norm		<- mutate_at(taqmanData, taqmanGenes, .funs = list( ~ .-Kan)) #we work in the log domain
 #taqmanData_Norm		<- mutate_at(taqmanData, .vars = vars(taqmanGenes), .funs = list( ~ .-0.5*(Kan + rpl13))) #we work in the log domain
 #taqmanData_Norm	<- taqmanData
 
@@ -78,9 +82,9 @@ densPlot	<- ggplot( data = data.frame( dens$x, dens$y), mapping = aes( dens$x, d
 			geom_vline( xintercept = expLogMinimal - 1 , color = "red") +
 			scale_x_continuous( name = "log10 probe expression" ) +
 			scale_y_continuous( name = "Probe expression density") +
-			theme(	plot.title 	= element_text( size = 50, hjust = 0),
-				axis.title	= element_text( size = 30), 
-				axis.text	= element_text( size = 30),
+			theme(	plot.title 	= element_text( size = 100, hjust = 0),
+				axis.title	= element_text( size = 100), 
+				axis.text	= element_text( size = 75),
 				axis.text.y	= element_text( margin = margin( l = 0, t = 0, r = 1, b = 0))
 				) 
 			#ggtitle( "taqman probes")
@@ -99,6 +103,11 @@ if (plotDPI == 100) {
 }
 
 
+if (plotDPI == 'pdf') {
+
+  ggsave( paste0( "taqmanDensityPlot", ".pdf"), path = taqmanPlotDirPdf, device = "pdf" , plot = densPlot, width = plotWidth, height = plotHeight, units = "in", scale = 4)
+
+}
 #now normalize for the minimum - which means substract the minimal value in the log scale
 
 taqmanScTableDir 	<- file.path( scTablesDir, "taqman")
@@ -129,10 +138,6 @@ clusterOrderedCells	<- intersect( clusterOrderedCells, genePos["ltk"])
 	#numbers are easier to sort; we will need this for the heatmap
 levels( seuratTaqman@ident)	<- names( getFinalClusterTypes( seuratTaqman))
 
-heatMapHeight 	<- 7
-heatMapWidth 	<- 10
-Margin		<- 2
-
 source("R/drawTaqmanHeatMap.r")
 
 if (plotDPI == 600) {
@@ -155,6 +160,15 @@ png( file = file.path( taqmanPlotDir100dpi, "taqmanBiclustHeatMap.png"),
 	pointsize = 2 
 )
 	draw( drawTaqmanHeatMap( seuratTaqman,  clusterOrderedCells = colnames( seuratTaqman@data), heatMapHeight, heatMapWidth, showCellNames = FALSE))
+dev.off()}
+
+if (plotDPI == 'pdf') {
+pdf( file = file.path( taqmanPlotDirPdf, "taqmanBiclustHeatMap.pdf"),
+	height = heatMapHeight,
+	width =  heatMapWidth,
+	paper = 'a4r'
+)
+	draw( drawTaqmanHeatMap( seuratTaqman,  clusterOrderedCells = colnames( seuratTaqman@data), heatMapHeight - Margin, heatMapWidth - 3*Margin, showCellNames = FALSE))
 dev.off()}
 
 seuratTaqmanLtk <- SubsetData( seuratTaqman, cells.use = genePos$ltk)
@@ -183,7 +197,20 @@ png( file = file.path( taqmanPlotDir100dpi, "taqmanLtkPosHeatMap.png"),
 
 dev.off()}
 
-png( filename = file.path( taqmanPlotDir, "taqmanGeneCors.png"))
+if (plotDPI == 'pdf') {
+pdf( file = file.path( taqmanPlotDirPdf, "taqmanLtkPosHeatMap.pdf"),
+	height = heatMapHeight,
+	width =  heatMapWidth,
+	paper = 'a4r'
+)
+	draw( drawTaqmanHeatMap( seuratTaqmanLtk,  clusterOrderedCells = colnames( seuratTaqmanLtk@data), heatMapHeight - Margin, heatMapWidth - 3*Margin, showCellNames = FALSE))
+dev.off()}
+
+png( file = file.path( taqmanPlotDir, "taqmanGeneCors.png"))
+	heatmap( cor(taqmanMatrixF), col = viridis(1024))
+dev.off()
+
+pdf( file = file.path( taqmanPlotDirPdf, "taqmanGeneCors.pdf"))
 	heatmap( cor(taqmanMatrixF), col = viridis(1024))
 dev.off()
 

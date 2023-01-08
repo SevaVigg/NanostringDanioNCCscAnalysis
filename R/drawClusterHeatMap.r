@@ -45,7 +45,8 @@ annotBar		<- HeatmapAnnotation(
 				which = "column",
 				annotation_name_gp = gpar( fontsize = 16, fontface = "bold"),
 				simple_anno_size = unit( 0.7, "cm"),  
-				annotation_legend_param = list( ncol = 2, nrow = length( levels(seuratObj@ident)))
+				annotation_legend_param = list( ncol = 2, nrow = length( levels(seuratObj@ident))),
+				show_legend = TRUE 
 					)
 hMap		<- Heatmap( 	dataMatrix[ , names(orderedCellTypes)], 
 			name 	= "gene expression",
@@ -54,8 +55,8 @@ hMap		<- Heatmap( 	dataMatrix[ , names(orderedCellTypes)],
 			heatmap_legend_param = list(
 				title = "log10(Exp)",
 				legend_height = unit( 2, "inches"),
-				grid_width = unit( 0.5, "inches"),
-				title_gp = gpar( fontsize = 12, fontface = "bold")		
+				grid_width = unit( 0.2, "inches"),
+				title_gp = gpar( fontsize = 12, fontface = "plain")		
 						),
 			col	=  colPanelFun,
 			bottom_annotation = annotBar,  
@@ -67,11 +68,12 @@ hMap		<- Heatmap( 	dataMatrix[ , names(orderedCellTypes)],
 			row_dend_reorder = FALSE,
 			column_dend_reorder = FALSE,
 			show_column_names = FALSE, 
-			row_names_gp = gpar(fontsize = 12),
+			row_names_gp = gpar(fontsize = 10),
 #			column_names_gp = gpar(fontsize = 16),
 			clustering_distance_rows = function(x) dist( x, method = "cosine", pairwise = TRUE), 
 #			clustering_distance_columns = function(x) dist( x, method = "cosine", pairwise = TRUE), 
-			use_raster = TRUE, raster_device = "png"
+			use_raster = FALSE		
+#			raster_device = "png"
 			)
 
 

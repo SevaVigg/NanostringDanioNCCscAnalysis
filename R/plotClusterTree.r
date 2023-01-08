@@ -51,5 +51,20 @@ png( file = file.path( clusterTreeDir100dpi, paste0( treeName, ".png")),
 	)	
  	nodelabels( text = " ")
 dev.off()
+}else if (plotDPI == 'pdf') {
+pdf( file = file.path( clusterTreeDirPdf, paste0( treeName, ".pdf")),
+	height = 7,
+	width =  7,
+	paper = 'a4'	
+)
+	PlotClusterTree( seuratObj,
+	type	= "phylogram",
+	cex 	= 2,
+	adj	= 0,
+	label.offset = 0.002
+	)	
+ 	nodelabels( text = " ")
+dev.off()
+
 }else{ cat("Select plotDPI 600 or plotDPI 100")}
 }
